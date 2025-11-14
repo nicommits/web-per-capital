@@ -1,4 +1,4 @@
-import BalanceTable from "@/components/balances/BalanceTable";
+import BalanceTable from "@/app/balances/BalanceTable";
 
 export default function BalancesPage() {
   return (

@@ -1,5 +1,5 @@
-import FondoResumenCard from "@/components/fondos/FondoResumenCard";
-import FondoDetalleStats from "@/components/fondos/FondoDetalleStats";
+import FondoResumenCard from "@/app/fondos/FondoResumenCard";
+import FondoDetalleStats from "@/app/fondos/FondoDetalleStats";
 
 export default function FondosPage() {
   return (

@@ -1,4 +1,4 @@
-import ReporteCard from "@/components/reportes/ReporteCard";
+import ReporteCard from "@/app/reportes/ReporteCard";
 
 const dummyReportes = [
   { id: 1, titulo: "Reporte Trimestral Q1 2025", fecha: "2025-03-31" },

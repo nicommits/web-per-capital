@@ -5,9 +5,10 @@ type ButtonProps = {
   children: ReactNode;
   href?: string;
   variant?: "solid" | "ghost";
+  className?: string;
 };
 
-export function Button({ children, href, variant = "solid" }: ButtonProps) {
+export function Button({ children, href, variant = "solid", className: extraClass }: ButtonProps) {
   const base =
     "inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition border";
   const solid =
@@ -15,8 +16,7 @@ export function Button({ children, href, variant = "solid" }: ButtonProps) {
   const ghost =
     "bg-transparent text-per-accent border-transparent hover:bg-slate-900";
 
-  const className = `${base} ${variant === "solid" ? solid : ghost}`;
-
+  const className = `${base} ${variant === "solid" ? solid : ghost} ${extraClass ?? ""}`.trim();
   if (href) {
     return (
       <Link href={href} className={className}>

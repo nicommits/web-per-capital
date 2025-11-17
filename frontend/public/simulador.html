@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulador de Emisión de Deuda</title>
+    <!-- Incluyendo fuentes de Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #00002F;
+            --secondary-color: #f8f9fa;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+            --font-color: #333;
+            --highlight-color: #00002F;
+            --legal-bg: #f1f3f5;
+            --warning-bg: #fff;
+            --warning-border: #917d12;
+            --warning-text: #615307;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: -webkit-system-font, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            background: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0;
+            background: none;
+            border-radius: 30px;
+            box-shadow: none;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 30px 30px 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .header h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 700;
+        }
+
+        .main-content {
+            background: #e9ecef;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            transition: all 0.5s ease;
+            transform-origin: top;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .main-content.two-cols {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .main-content.is-open {
+            max-height: 2000px;
+            opacity: 1;
+            padding: 20px;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .form-section {
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 30px;
+        }
+
+        .results-section {
+            display: none;
+            padding: 40px;
+            background: var(--secondary-color);
+            border-radius: 30px;
+        }
+
+        .main-content.two-cols .form-section {
+            border-right: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #5a5a5a;
+            border-radius: 9999px;
+            font-size: 1rem;
+            transition: 0.3s;
+            background-color: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 0, 47, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            width: fit-content;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 47, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #simulatorForm .btn,
+        .results-section .btn {
+            display: block;
+            margin: 20px auto 0;
+            width: fit-content;
+        }
+
+        .results-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--font-color);
+        }
+
+        .result-value {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .highlight {
+            background: var(--highlight-color);
+            color: #fff !important;
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+       
+        .toggle-btn.is-open {
+            transform: rotate(180deg);
+        }
+
+        .legal-box {
+            background: var(--legal-bg);
+            border: 1px solid var(--border-color);
+            color: var(--font-color);
+            padding: 14px;
+            border-radius: 12px;
+        }
+
+        .legal-box p {
+            margin: 0 0 8px 0;
+            font-size: 0.9em;
+        }
+
+        .legal-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Estilos del modal personalizado */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+        }
+       
+        .modal-message {
+            color: var(--font-color);
+            font-size: 1.1rem;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Nuevos estilos para advertencias más elegantes */
+        .warning-box {
+            background-color: #fcfcfc;
+            border: 1px solid var(--warning-border);
+            color: var(--warning-text);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+            font-size: 0.9rem;
+            line-height: 1.3;
+        }
+
+        .warning-box.show {
+            display: block;
+        }
+
+        .error-message {
+            color: #c33;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content,
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header" id="simulatorHeader">
+        <h1>Simulador de Emisión de Deuda</h1>
+        <button id="toggleSimulator" class="toggle-btn" aria-label="Mostrar/ocultar simulador">⌄</button>
+    </div>
+
+    <div class="main-content" id="simulatorPanel">
+        <div class="form-section">
+            <form id="simulatorForm">
+                <div class="form-group">
+                    <label>Perfil de Usuario</label>
+                    <div class="profile-selector">
+                        <div class="profile-option active" data-profile="empresa">Empresa Emisora</div>
+                    </div>
+                    <input type="hidden" id="perfil" name="perfil" value="empresa" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="monto">Monto a Emitir (USD)</label>
+                        <input type="number" id="monto" name="monto" min="1000" step="1" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="plazo">Plazo (días)</label>
+                        <select id="plazo" name="plazo" required>
+                            <option value="90">90</option>
+                            <option value="180">180</option>
+                            <option value="360" selected>360</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- Campo de selección para la Tasa de Interés Anual (se cambió de botones a un select) -->
+                    <div class="form-group">
+                        <label for="tasa">Tasa de Interés Anual (%)</label>
+                        <select id="tasa" name="tasa" required>
+                            <option value="13">13%</option>
+                            <option value="14">14%</option>
+                            <option value="15">15%</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipoCupon">Tipo de Cupón</label>
+                        <select id="tipoCupon" name="tipoCupon" required>
+                            <option value="con-cupon">Con Cupón</option>
+                            <option value="cero-cupon">Cero Cupón</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" id="frecuenciaFields">
+                    <div class="form-group">
+                        <label for="frecuenciaInteres">Frecuencia de Pago de Intereses</label>
+                        <select id="frecuenciaInteres" name="frecuenciaInteres">
+                            <option value="mensual">Mensual</option>
+                            <option value="trimestral">Trimestral</option>
+                            <option value="semestral">Semestral</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="frecuenciaAmortizacion">Frecuencia de Amortización de Capital</label>
+                        <select id="frecuenciaAmortizacion" name="frecuenciaAmortizacion">
+                            <option value="semestral">Semestral</option>
+                            <option value="anual">Anual</option>
+                            <option value="vencimiento">Al Vencimiento</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipoEmpresa">Tipo de Empresa</label>
+                    <select id="tipoEmpresa" name="tipoEmpresa" required>
+                        <option value="PYME">PYME</option>
+                        <option value="No PYME">No PYME</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombreEmpresa">Nombre del Emisor</label>
+                    <input type="text" id="nombreEmpresa" name="nombreEmpresa" required />
+                </div>
+
+                <!-- Campos de empresa adicionales -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sector">Sector</label>
+                        <input type="text" id="sector" name="sector" placeholder="Ej: Alimentos, Construcción, Servicios" />
+                    </div>
+                    <div class="form-group">
+                        <label for="antiguedad">Antigüedad Laboral (años)</label>
+                        <input type="number" id="antiguedad" name="antiguedad" min="0" step="1" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" required />
+                        <div id="antiguedadWarning" class="warning-box hidden">
+                            La antigüedad de la empresa debe ser mayor a 2 años.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="usoFondos">Uso de Fondos</label>
+                    <select id="usoFondos" name="usoFondos">
+                        <option value="Capital de trabajo">Capital de trabajo</option>
+                        <option value="Reestructuración de deuda">Reestructuración de deuda</option>
+                        <option value="Materia prima">Materia prima</option>
+                        <option value="Maquinaria y equipos">Maquinaria y equipos</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+
+                <!-- Datos de contacto -->
+                <div class="form-group">
+                    <h4 style="color:var(--primary-color);margin-bottom:8px">Datos de Contacto</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="numeroContacto">Número de Contacto</label>
+                            <input type="tel" id="numeroContacto" name="numeroContacto" inputmode="numeric" maxlength="13" placeholder="0412 345 6789" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="correoContacto">Correo Electrónico</label>
+                            <input type="email" id="correoContacto" name="correoContacto" placeholder="correo@empresa.com" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aviso legal en recuadro gris -->
+                <div class="form-group legal-box" id="avisosLegales">
+                    <p>Este documento es una simulación de emisión de títulos valores de deuda en moneda extranjera y no debe ser interpretado como una recomendación o propuesta formal. Los valores presentados son basados en datos de referencia y están sujetos a cambios.</p>
+                    <p>Para la empresa interesada en financiarse a través de la emisión de títulos valores es necesaria una evaluación precisa de sus estados financieros, flujo de caja, gerencia, uso de fondos y colaterales.</p>
+                </div>
+
+                <button type="submit" class="btn">Calcular Simulación</button>
+            </form>
+        </div>
+
+        <div class="results-section">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Calculando resultados...</p>
+            </div>
+
+            <div id="results" class="hidden">
+                <div class="results-card">
+                    <h3>Datos de la Simulación</h3>
+                    <div id="simulationData"></div>
+                </div>
+
+                <div class="results-card">
+                    <h3 id="resultsTitle">Costo de Financiamiento</h3>
+                    <div id="calculationResults"></div>
+                </div>
+
+                <!-- Sección de comisiones que el usuario no quiere ver -->
+                <div class="results-card hidden">
+                    <h3>Detalle de Comisiones y Gastos</h3>
+                    <div id="commissionDetails"></div>
+                </div>
+
+                <button onclick="generatePDF()" class="btn">Generar Reporte PDF</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal personalizado para notificaciones -->
+<div id="customModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3 id="modalTitle">Atención</h3>
+        <p id="modalMessage" class="modal-message"></p>
+        <button class="btn" onclick="closeModal()">Cerrar</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    let currentData = {};
+
+    // === SUPABASE: configuración e instancia ===
+    const SUPABASE_URL = 'https://rkrnhnlkljktpqtyjonv.supabase.co';   // <-- cambia
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcm5obmxrbGprdHBxdHlqb252Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5NjQxOTgsImV4cCI6MjA3MzU0MDE5OH0.XaCI9LrvdoIogl33kKhO__8vfzCpLvyhooyuicVz-FQ';                      // <-- cambia
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+
+    // FUNCIÓN CRÍTICA QUE FALTABA - Formatea números con separadores de miles
+    function formatNumber(num) {
+        if (typeof num !== 'number') {
+            num = parseFloat(num) || 0;
+        }
+        return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showModal(title, message) {
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalMessage').textContent = message;
+        document.getElementById('customModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('customModal').style.display = 'none';
+    }
+
+    // Lógica para alternar la visualización del panel principal del simulador
+    document.getElementById('toggleSimulator').addEventListener('click', function() {
+        const panel = document.getElementById('simulatorPanel');
+        panel.classList.toggle('is-open');
+        this.classList.toggle('is-open'); // Rota la flecha
+    });
+
+    // NUEVO: Validación de antigüedad laboral
+    document.getElementById('antiguedad').addEventListener('input', function() {
+        const antiguedad = parseInt(this.value) || 0;
+        const warningBox = document.getElementById('antiguedadWarning');
+       
+        if (antiguedad <= 2) {
+            warningBox.classList.remove('hidden');
+        } else {
+            warningBox.classList.add('hidden');
+        }
+    });
+
+    // Tipo de cupón
+    document.getElementById('tipoCupon').addEventListener('change', function() {
+        const f = document.getElementById('frecuenciaFields');
+        if (this.value === 'cero-cupon') f.classList.add('hidden');
+        else f.classList.remove('hidden');
+    });
+
+    // Regla de plazo > 360 -> anual + disabled
+    (function() {
+        const plazo = document.getElementById('plazo');
+        const frecI = document.getElementById('frecuenciaInteres');
+        const apply = () => {
+            const val = parseInt(plazo.value || '0', 10);
+            if (val > 360) {
+                frecI.value = 'anual';
+                frecI.disabled = true;
+            } else {
+                frecI.disabled = false;
+            }
+        };
+        plazo.addEventListener('change', apply);
+        apply();
+    })();
+
+    // Formateo automático del número
+    (function() {
+        const tel = document.getElementById('numeroContacto');
+        const formatPhone = (digits) => {
+            const v = digits.slice(0, 11);
+            const p1 = v.slice(0, 4);
+            const p2 = v.slice(4, 7);
+            const p3 = v.slice(7, 11);
+            return [p1, p2, p3].filter(Boolean).join(' ');
+        };
+        tel.addEventListener('input', (e) => {
+            const digits = e.target.value.replace(/\D/g, '');
+            const formatted = formatPhone(digits);
+            e.target.value = formatted;
+        });
+    })();
+
+    // Submit con nuevas validaciones
+    document.getElementById('simulatorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+       
+        // Validar campos obligatorios
+        const telefono = document.getElementById('numeroContacto').value.trim();
+        const correo = document.getElementById('correoContacto').value.trim();
+        const antiguedad = parseInt(document.getElementById('antiguedad').value) || 0;
+       
+        // Validar antigüedad laboral
+        if (antiguedad <= 2) {
+            showModal('Requisitos no cumplidos', 'La empresa debe tener una antigüedad mayor a 2 años para cumplir con los requisitos para realizar los trámites comerciales. Por favor revise este dato antes de continuar.');
+            return;
+        }
+       
+        // Validar contacto y correo
+        if (!telefono || !correo) {
+            showModal('Atención', 'Por favor complete el Número de Contacto y el Correo Electrónico antes de calcular.');
+            return;
+        }
+       
+        showLoading();
+        setTimeout(async () => {
+            calculateResults();
+            try {
+            await saveToSupabase(currentData); // <--- guarda en Supabase
+            } catch (e) { /* ya se loguea en consola */ }
+            hideLoading();
+            showResults();
+        }, 800);
+    });
+
+    function showLoading() {
+        document.querySelector('.main-content').classList.add('two-cols');
+        document.querySelector('.results-section').style.display = 'block';
+        document.getElementById('loading').classList.add('show');
+        document.getElementById('results').classList.add('hidden');
+    }
+
+    function hideLoading() {
+        document.getElementById('loading').classList.remove('show');
+    }
+
+    function showResults() {
+        document.querySelector('.main-content').classList.add('two-cols');
+        document.querySelector('.results-section').style.display = 'block';
+        document.getElementById('results').classList.remove('hidden');
+    }
+
+    // Función de cálculo actualizada con la nueva regla de negocio
+    function calculateResults() {
+        const data = Object.fromEntries(new FormData(document.getElementById('simulatorForm')).entries());
+        data.perfil = 'empresa';
+        const monto = parseFloat(data.monto);
+        const plazo = parseInt(data.plazo);
+        const tasa = parseFloat(data.tasa) / 100;
+        const tipoEmpresa = data.tipoEmpresa;
+        const valorEfectivo = monto;
+        const interesesTotales = (monto * tasa * plazo) / 360;
+
+        const registroNacional = monto * (tipoEmpresa === 'PYME' ? 0.01 : 0.02);
+        const contribucionAnual = monto * 0.005;
+       
+        // NUEVA REGLA DE NEGOCIO: Si monto < $50,000, calificación = $800
+        let calificacionRiesgo;
+        if (monto < 50000) {
+            calificacionRiesgo = 800;
+        } else {
+            const calificacionRiesgoBase = 1500;
+            calificacionRiesgo = calificacionRiesgoBase * (tipoEmpresa === 'No PYME' ? 2 : 1);
+        }
+       
+        const estructuracion = monto * 0.02;
+        const colocacion = monto * (monto > 1000000 ? 0.075 : 0.0625);
+        const representacion = monto * 0.0025;
+        const inscripcionISIN = getInscripcionISIN(plazo);
+        const publicacionAviso = 25;
+        const cvvMensual = monto * 0.0003;
+        const cvvTotal = cvvMensual * Math.ceil(plazo / 30);
+        const iva = cvvTotal * 0.16;
+        const bvcc = monto * 0.005;
+        const liquidacion = 0;
+
+        const totalComisiones = registroNacional + contribucionAnual + calificacionRiesgo + estruturacion + colocacion + representacion + inscripcionISIN + publicacionAviso + cvvTotal + iva + bvcc + liquidacion;
+
+        currentData = {
+            ...data,
+            monto,
+            plazo,
+            tasa: tasa * 100,
+            valorEfectivo,
+            interesesTotales,
+            totalComisiones,
+            comisiones: {
+                registroNacional,
+                contribucionAnual,
+                calificacionRiesgo,
+                estructuracion,
+                colocacion,
+                representacion,
+                inscripcionISIN,
+                publicacionAviso,
+                cvvTotal,
+                iva,
+                bvcc,
+                liquidacion
+            }
+        };
+
+        currentData.costoTotalEmision = totalComisiones + interesesTotales;
+        currentData.costoFinanciamiento = (currentData.costoTotalEmision / monto) * 100;
+        displayResults();
+    }
+
+    function getInscripcionISIN(plazo) {
+        if (plazo <= 90) return 38;
+        if (plazo <= 180) return 80;
+        if (plazo <= 270) return 118;
+        return 160;
+    }
+
+    function displayResults() {
+        const simHTML = `
+            <div class="result-item"><span class="result-label">Perfil:</span><span class="result-value">Empresa Emisora</span></div>
+            <div class="result-item"><span class="result-label">Empresa:</span><span class="result-value">${currentData.nombreEmpresa || '-'}</span></div>
+            <div class="result-item"><span class="result-label">Sector:</span><span class="result-value">${currentData.sector || '-'}</span></div>
+            <div class="result-item"><span class="result-label">Monto Solicitado:</span><span class="result-value">$${currentData.monto.toLocaleString()}</span></div>
+            <div class="result-item"><span class="result-label">Plazo:</span><span class="result-value">${currentData.plazo} días</span></div>
+            <div class="result-item"><span class="result-label">Tasa Anual:</span><span class="result-value">${currentData.tasa}%</span></div>
+            <div class="result-item"><span class="result-label">Uso de Fondos:</span><span class="result-value">${currentData.usoFondos || '-'}</span></div>
+        `;
+
+        const calcHTML = `
+            <div class="result-item"><span class="result-label">Intereses Totales:</span><span class="result-value">$${currentData.interesesTotales.toFixed(2).toLocaleString()}</span></div>
+            <div class="result-item"><span class="result-label">Comisiones y Gastos:</span><span class="result-value">$${currentData.totalComisiones.toFixed(2).toLocaleString()}</span></div>
+            <div class="result-item"><span class="result-label">Costo Total de Emisión:</span><span class="result-value highlight">$${currentData.costoTotalEmision.toFixed(2).toLocaleString()}</span></div>
+            <div class="result-item"><span class="result-label">Costo de Financiamiento:</span><span class="result-value highlight">${currentData.costoFinanciamiento.toFixed(2)}%</span></div>
+        `;
+
+        document.getElementById('simulationData').innerHTML = simHTML;
+        document.getElementById('calculationResults').innerHTML = calcHTML;
+    }
+
+    // === SUPABASE: guardar registro ===
+    // === SUPABASE: guardar registro (versión segura y con logs) ===
+    async function saveToSupabase(data) {
+    const row = {
+        perfil: data.perfil || 'empresa',
+        monto: Number(data.monto) || null,
+        plazo: Number(data.plazo) || null,
+        tasa: Number(data.tasa) || null, // en %
+        tipo_cupon: data.tipoCupon || null,
+        frecuencia_interes: data.frecuenciaInteres || null,
+        frecuencia_amortizacion: data.frecuenciaAmortizacion || null,
+        tipo_empresa: data.tipoEmpresa || null,
+        nombre_empresa: data.nombreEmpresa || null,
+        sector: data.sector || null,
+        antiguedad: Number(data.antiguedad) || null,
+        uso_fondos: data.usoFondos || null,
+        numero_contacto: data.numeroContacto || null,
+        correo_contacto: data.correoContacto || null,
+        intereses_totales: Number(data.interesesTotales ?? null),
+        total_comisiones: Number(data.totalComisiones ?? null),
+        costo_total_emision: Number(data.costoTotalEmision ?? null),
+        costo_financiamiento: Number(data.costoFinanciamiento ?? null),
+    };
+
+    // Limpieza: convierte NaN a null para evitar errores de tipo
+    Object.keys(row).forEach(k => {
+        if (Number.isNaN(row[k])) row[k] = null;
+    });
+
+    console.log('[SUPABASE] Insert row ->', row);
+    const { data: result, error } = await supabase.from('simulador_leads').insert(row).select('id, created_at').single();
+
+    if (error) {
+        console.error('[SUPABASE] Insert error:', error);
+        showModal('Error al guardar', (error.message || 'No se pudo registrar el contacto'));
+        return null;
+    }
+    console.log('[SUPABASE] Insert OK ->', result);
+    return result;
+    }
+
+    // Función de generación de PDF corregida
+    function generatePDF() {
+        try {
+            const { jsPDF } = window.jspdf;
+            // Usamos 'pt' (puntos) como unidad para un control más fino del tamaño de fuente y espaciado.
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'pt',
+                format: 'letter'
+            });
+
+            // ----------------------------------------------------
+            // CONFIGURACIÓN DE DISEÑO CORPORATIVO
+            // ----------------------------------------------------
+            const brandColors = {
+                primary: '#00002F',   // Azul Marino (Principal)
+                secondary: '#4A6B8A', // Azul Grisáceo (Secundario)
+                accent: '#EAEFF4',    // Gris Claro (Fondos de tabla)
+                textPrimary: '#212529', // Negro Suave
+                textSecondary: '#6c757d', // Gris Medio
+                white: '#FFFFFF'
+            };
+
+            const page = {
+                width: doc.internal.pageSize.getWidth(),
+                height: doc.internal.pageSize.getHeight(),
+                margin: 40
+            };
+
+            let currentY = 0; // Posición vertical que actualizaremos a medida que dibujamos
+
+            // ----------------------------------------------------
+            // HELPER FUNCTIONS (Funciones de Ayuda para Dibujar)
+            // ----------------------------------------------------
+
+            /**
+             * Dibuja el encabezado del documento.
+             */
+            const drawHeader = () => {
+                doc.setFillColor(230, 230, 230);
+                doc.rect(0, 0, page.width, 80, 'F'); // Barra superior
+
+                // Logo (usando el placeholder que proporcionaste)
+                const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQsAAAA9CAYAAAC6AUxWAAAAAXNSR0IArs4c6QAAFcBJREFUeF7tXXt4lMXV/5153024hCDVar2hxUpba7VNEKv264Nf6+O9VCCboBjJbkIUFLxQL8mGLOwGxQu2VqqRbBAUSTYRpNVqqxVb0FohWPHaKo+fttbSVkQlQLL7zvkySzZswmb33WRz05nn4Y/wnjlz5jfz/t6Zc87MEnTRCGgENAI2ECAbMlpEI6AR0AhAk4WeBBoBjYAtBDRZ2IJJC2kENAKaLPQc0AhoBGwhoMnCFkxaSCOgEdBkoeeARkAjYAsBTRa2YNJCGgGNgCYLPQc0AhoBWwhosrAFkxbSCGgENFnoOaAR0AjYQkCThS2YtJBGQCOgyULPAY2ARsAWAposbMGkhCYNE/isBICwW4WA/1gQzwKb/2W3jpbTCAxWBDRZ2BwZExPOYfBTqZAFwC8Y4JJWvPyGzWa0mEZg0CKgycLm0JjIuYNBNwCpHL7jOgufzgTeabHZjBbTCAxaBPqELIbhtHFhyMv6u9cE2k3gJ1vR9NaBtk892oTp6q0tDKgtyLEp6NnDwK0STf4U6mhRjcCgRaAPyCLPMPDuFQAHBqDX7xHY...";
+                try {
+                    doc.addImage(logoBase64, 'PNG', page.margin, 15, 180, 40);
+                } catch (e) { console.error("Error al cargar el logo:", e); }
+               
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(18);
+                doc.setTextColor(brandColors.white);
+                doc.text("Simulación de Emisión de Deuda", page.width - page.margin, 35, { align: 'right' });
+
+                const fecha = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(10);
+                doc.setTextColor(brandColors.white);
+                doc.text(`Generado el ${fecha}`, page.width - page.margin, 55, { align: 'right' });
+               
+                currentY = 110; // Espacio después del encabezado
+            };
+
+            /**
+             * Dibuja el pie de página.
+             */
+            const drawFooter = () => {
+                doc.setFillColor(brandColors.primary);
+                doc.rect(0, page.height - 30, page.width, 30, 'F');
+               
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(brandColors.white);
+                doc.text("Este es un documento confidencial generado por Per Capital.", page.margin, page.height - 12);
+                doc.text(`Página 1 de 1`, page.width - page.margin, page.height - 12, { align: 'right' });
+            };
+
+            /**
+             * Dibuja un título de sección estandarizado.
+             * @param {string} title - El texto del título.
+             */
+            const drawSectionTitle = (title) => {
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(14);
+                doc.setTextColor(brandColors.primary);
+                doc.text(title.toUpperCase(), page.margin, currentY);
+                currentY += 8;
+                doc.setDrawColor(brandColors.secondary);
+                doc.setLineWidth(1.5);
+                doc.line(page.margin, currentY, page.width - page.margin, currentY);
+                currentY += 25; // Espacio después del título
+            };
+
+            /**
+             * Dibuja una tabla de datos con formato profesional.
+             * @param {Array<Array<string>>} data - Un array de filas, donde cada fila es [label, value].
+             * @param {boolean} highlightLastRow - Si es true, la última fila se resalta.
+             */
+            const drawTable = (data, highlightLastRow = false) => {
+                const rowHeight = 22;
+                const col1X = page.margin + 10;
+                const col2X = page.width - page.margin - 10;
+               
+                data.forEach((row, index) => {
+                    const isLast = index === data.length - 1;
+                    const isHighlighted = highlightLastRow && isLast;
+
+                    // Fondo de la fila
+                    if (isHighlighted) {
+                        doc.setFillColor(brandColors.primary);
+                    } else {
+                        doc.setFillColor(index % 2 === 0 ? brandColors.white : brandColors.accent);
+                    }
+                    doc.rect(page.margin, currentY, page.width - (page.margin * 2), rowHeight, 'F');
+
+                    // Texto de la fila
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.setTextColor(isHighlighted ? brandColors.white : brandColors.textPrimary);
+                    doc.text(row[0], col1X, currentY + 15);
+                   
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(row[1], col2X, currentY + 15, { align: 'right' });
+
+                    currentY += rowHeight;
+                });
+                currentY += 30; // Espacio después de la tabla
+            };
+
+            // ----------------------------------------------------
+            // CONSTRUCCIÓN DEL DOCUMENTO PDF
+            // ----------------------------------------------------
+
+            drawHeader();
+
+            // --- Sección: Resumen Ejecutivo ---
+            drawSectionTitle("Resumen Ejecutivo");
+            const executiveData = [
+                ['Nombre del Emisor', `${currentData.nombreEmpresa}`],
+                ['Monto de la Emisión', `${formatNumber(currentData.monto)}`],
+                ['Costo Total Estimado de la Emisión', `${formatNumber(currentData.costoTotalEmision)}`],
+                ['Costo de Financiamiento', `${currentData.costoFinanciamiento.toFixed(2)}%`]
+            ];
+            drawTable(executiveData, true); // Resaltar la última fila
+
+            // --- Sección: Parámetros de la Simulación ---
+            drawSectionTitle("Parámetros de la Simulación");
+            const paramsData = [
+                ['Tipo de Empresa', currentData.tipoEmpresa],
+                ['Sector', currentData.sector || '-'],
+                ['Uso de los Fondos', currentData.usoFondos || '-'],
+                ['Plazo de la Emisión', `${currentData.plazo} días`],
+                ['Tasa de Interés Anual', `${currentData.tasa}%`],
+                ['Tipo de Cupón', currentData.tipoCupon === 'cero-cupon' ? 'Cero Cupón' : 'Con Cupón']
+            ];
+            drawTable(paramsData);
+
+            // --- Sección: Desglose de Costos Estimados ---
+            drawSectionTitle("Desglose de Costos Estimados");
+            const costsData = [
+                ['Intereses Totales', `${formatNumber(currentData.interesesTotales)}`],
+                ['Total Gastos y Comisiones', `${formatNumber(currentData.totalComisiones)}`],
+                ['Costo Total de Emisión (Intereses + Comisiones)', `${formatNumber(currentData.costoTotalEmision)}`]
+            ];
+            drawTable(costsData, true); // Resaltar la última fila
+
+            // --- Sección: Aviso Legal (posicionado cerca del final) ---
+            currentY = page.height - 130;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(brandColors.textSecondary);
+            const legalText = `AVISO: Este documento es una simulación basada en los datos proporcionados y no constituye una oferta formal de financiamiento. Los costos y comisiones son estimaciones sujetas a las condiciones del mercado y a una evaluación de riesgo completa de la empresa. Para una propuesta formal, es necesario un análisis detallado de los estados financieros y la estructura de la compañía.`;
+            const splitText = doc.splitTextToSize(legalText, page.width - (page.margin * 2));
+            doc.text(splitText, page.margin, currentY);
+
+            drawFooter();
+
+            // ----------------------------------------------------
+            // GUARDAR EL DOCUMENTO
+            // ----------------------------------------------------
+            const fileName = `Simulacion_Deuda_${(currentData.nombreEmpresa || 'empresa').replace(/\s/g, '_')}.pdf`;
+            doc.save(fileName);
+
+        } catch (error) {
+            console.error('Error al generar el PDF:', error);
+            showModal('Error al Generar PDF', 'Hubo un problema al crear el reporte. Por favor, inténtelo de nuevo o contacte a soporte.');
+        }
+    }
+</script>
+</body>
+</html>
+ 
